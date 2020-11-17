@@ -1,0 +1,53 @@
+version: '3.3'
+services: 
+   wordpress: 
+     depends_on: 
+        - dbmysql 
+     image: ${WP}
+     volumes: 
+        -  ${WP_PATH}:/var/www/html
+        -  ${INI_PATH}:/usr/local/etc/php/conf.d/uploads.ini
+     expose: 
+        - "80" 
+     restart: always 
+     container_name: wordpress-live
+     networks:
+       - ${INTERNAL}
+       - ${PROXY}
+     environment: 
+       WORDPRESS_DB_HOST: ${DB_HOST} 
+       WORDPRESS_DB_USER: ${DB_USER} 
+       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+
+   dbmysql: 
+     image: ${SQL}
+     volumes:
+       - ${DB_PATH}:/var/lib/mysql 
+     expose: 
+       - "3306"
+     restart: always 
+     container_name: wp-mysql 
+     networks:
+       - ${INTERNAL}
+     environment: 
+       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PW} 
+       MYSQL_DATABASE: wordpress 
+       MYSQL_USER: ${DB_USER}
+       MYSQL_PASSWORD: ${DB_PASSWORD}
+
+   redis_dev:
+     image: ${REDIS}
+     volumes:
+       - ${REDIS_PATH}:/data
+     restart: always
+     container_name: redis4wp
+     expose:
+       - "6379"
+     environment:
+       TZ: ${TZ}
+     networks:
+       - ${INTERNAL}
+
+networks:
+ mailcowdockerized_mailcow-network:
+    external: true
